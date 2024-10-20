@@ -41,10 +41,18 @@ spec:
              volumeID: vol-0364ddbc3dd29b272
              fsType: ext4
 
+      #initContainers:
+        #- name: busybox
+          #image: busybox:latest
+         # args: ["rm", "-rf", "/var/lib/mysql/lost+found"]
+        #  volumeMounts:
+       #     - name: vpro-db-data
+      #        mountPath: /var/lib/mysql
+      
       initContainers:
-        - name: busybox
-          image: busybox:latest
-          args: ["rm", "-rf", "/var/lib/mysql/lost+found"]
-          volumeMounts:
-            - name: vpro-db-data
-              mountPath: /var/lib/mysql
+        - name: init-mydb
+          image: busybox
+          command: ['sh','-c', 'until nslookup vprodb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']
+        - name: init-memcache
+          image: busybox
+          command: [ 'sh','-c', 'until nslookup vprocache01.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;' ]        
